@@ -112,6 +112,60 @@ const createJob = async (req, res) => {
   }
 };
 
+// @desc    Save job from job search
+// @route   POST /api/jobs/save-from-search
+// @access  Private
+const saveJobFromSearch = async (req, res) => {
+  try {
+    const { job_id, job_title, employer_name, job_city, job_country, job_apply_link } = req.body;
+
+    // Check if job is already saved by this user
+    const existingJob = await Job.findOne({
+      user: req.user.id,
+      job_id
+    });
+
+    if (existingJob) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Job already saved'
+      });
+    }
+
+    // Build location string
+    const location = [job_city, job_country].filter(Boolean).join(', ');
+
+    // Create job entry
+    const job = await Job.create({
+      user: req.user.id,
+      companyName: employer_name,
+      role: job_title,
+      status: 'Saved',
+      location: location,
+      jobLink: job_apply_link,
+      appliedDate: new Date()
+    });
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        job
+      }
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Job already saved'
+      });
+    }
+    res.status(400).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
 // @desc    Update job
 // @route   PUT /api/jobs/:id
 // @access  Private
@@ -134,6 +188,20 @@ const updateJob = async (req, res) => {
       });
     }
 
+    // Check if status is being changed
+    if (req.body.status && req.body.status !== job.status) {
+      // Push old status into statusHistory using $push
+      await Job.findByIdAndUpdate(req.params.id, {
+        $push: {
+          statusHistory: {
+            status: job.status,
+            changedAt: new Date()
+          }
+        }
+      });
+    }
+
+    // Update job with new data (notes, interviewDate, status, etc.)
     job = await Job.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
@@ -228,6 +296,7 @@ module.exports = {
   getJobs,
   getJob,
   createJob,
+  saveJobFromSearch,
   updateJob,
   deleteJob,
   getJobStats

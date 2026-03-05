@@ -29,7 +29,7 @@ connectDB();
 // CORS Configuration - Allow all origins for development
 // In production, you would want to restrict this to your frontend domain
 const corsOptions = {
-  origin: true, // Allow all origins - works with credentials
+  origin: "http://localhost:5173",
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -53,7 +53,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/jobs', require('./routes/jobSearchRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
+app.use('/api/saved-jobs', require('./routes/savedJobRoutes'));
 
 // Health check route
 app.get('/api/health', (req, res) => {

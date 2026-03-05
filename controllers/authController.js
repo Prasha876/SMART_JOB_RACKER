@@ -131,24 +131,18 @@ const googleAuth = async (req, res) => {
     const payload = ticket.getPayload();
     const { email, name } = payload;
 
-    // Check if user already exists
+    // Check if user already exists with this email
     let user = await User.findOne({ email });
 
     if (user) {
-      // User exists - check if it's a Google user
-      if (!user.isGoogleUser) {
-        // This email is already registered with password
-        return res.status(400).json({
-          status: 'error',
-          message: 'This email is already registered with password. Please login with email and password.'
-        });
-      }
+      // User exists - log them in (email matches, regardless of provider)
+      // No error needed - just proceed with login
     } else {
       // Create new Google user
       user = await User.create({
         name: name || 'Google User',
         email,
-        password: 'google_oauth_placeholder', // Required by schema but won't be used
+        password: null,
         isGoogleUser: true
       });
     }

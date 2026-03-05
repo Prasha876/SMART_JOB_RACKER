@@ -20,9 +20,18 @@ const jobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Applied', 'Interview', 'Rejected', 'Selected'],
+    enum: ['Saved', 'Applied', 'Interview', 'Rejected', 'Selected'],
     default: 'Applied',
     required: true
+  },
+  location: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Location cannot be more than 200 characters']
+  },
+  jobLink: {
+    type: String,
+    trim: true
   },
   appliedDate: {
     type: Date,
@@ -31,8 +40,25 @@ const jobSchema = new mongoose.Schema({
   },
   notes: {
     type: String,
-    maxlength: [1000, 'Notes cannot be more than 1000 characters']
-  }
+    default: ""
+  },
+  source: {
+    type: String,
+    enum: ["manual", "search"],
+    default: "manual"
+  },
+  interviewDate: {
+    type: Date
+  },
+  statusHistory: [
+    {
+      status: String,
+      changedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ]
 }, {
   timestamps: true
 });

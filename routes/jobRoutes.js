@@ -3,6 +3,7 @@ const {
   getJobs,
   getJob,
   createJob,
+  saveJobFromSearch,
   updateJob,
   deleteJob,
   getJobStats
@@ -11,20 +12,20 @@ const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// All routes are protected
-router.use(protect);
+// Job statistics - protected
+router.get('/stats/summary', protect, getJobStats);
 
-// Job statistics
-router.get('/stats/summary', getJobStats);
+// Save job from search - protected
+router.post('/save-from-search', protect, saveJobFromSearch);
 
-// CRUD operations
+// CRUD operations - protected
 router.route('/')
-  .get(getJobs)
-  .post(createJob);
+  .get(protect, getJobs)
+  .post(protect, createJob);
 
 router.route('/:id')
-  .get(getJob)
-  .put(updateJob)
-  .delete(deleteJob);
+  .get(protect, getJob)
+  .put(protect, updateJob)
+  .delete(protect, deleteJob);
 
 module.exports = router;
